@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--<script src="templates.js"></script>-->
+<script src="http://underscorejs.org/underscore-min.js"></script>
+<style>
+    #btn-add{
+        display:block;
+        width:300px;
+        margin-left:auto;
+        margin-right:auto;
+    }
+    #demo{
+        display:block;
+        width:700px;
+        margin-left:auto;
+        margin-right:auto;
+    }
+</style>
+<head>
+    <title>Get Books</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<div id="viewport">
+    <header class="fontStyle" id="header-title">
+        <h1>I don't have the textbooks for:</h1>
+
+    </header>
+
+    <form id="form-box" onsubmit="return false;">
+        <input type='text' class='fontStyle' id='input-courseNum' name='courseNum'>
+        <input type='submit' value='Go!' id="btn-go" class='btn fontStyle' onclick="search();">
+    </form>
+
+    <form method="get" id="addSeller" action="newSeller">
+        <input type='submit' value='I have a book to sell!' id="btn-add" class='btn fontStyle'>
+    </form>
+
+    <p id="demo" class="fontStyle"></p>
+
+    <footer>
+        <p> Ying Lu and Xiaoman Xu || Worcester Polytechnic Institute </p>
+        <p>Contact Us</p>
+    </footer>
+</div>
+
+</body>
+
+<script>
+
+    function search(){
+
+        var req = new XMLHttpRequest();
+
+        req.onreadystatechange = function() {
+            if (req.readyState == 4 && req.status == 200) {
+                handleRes(req);
+                //document.getElementById("demo").innerHTML = req.responseText;
+            }
+        };
+        req.open('POST','/search',true);
+        req.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        req.send('courseNum'+'='+document.getElementById("input-courseNum").value);
+
+    }
+
+    var books = [];
+
+
+    var book = _.template(
+            "<div class='book'>" +
+            "<h2><%= seller %></h2>" +
+            "<p>electronic copy? <%= ecopy %></p>" +
+            "<p><%= email %></p>" +
+            "</div>"
+    );
+
+    function handleRes(req) {
+        if (req.readyState !== XMLHttpRequest.DONE)
+            return;
+
+        if (req.status === 200 ) {
+            if(req.responseText=="not found"){
+                document.getElementById('demo').innerHTML='Sorry, that course does not exist. Please try again!';
+            }
+            else{
+            books =JSON.parse(req.responseText);
+
+                buildList(books);
+            }
+       // var resText = JSON.parse(req.responseText);
+//            if(resText.length>0){
+//                books = resText;
+//
+//                buildList(books);
+//            }
+//            else{
+//                document.getElementById('demo').innerHTML='Sorry, that course does not exist. Please try again';
+//            }
+
+        }
+
+    }
+
+    function buildList(A) {
+
+        var i, toAppendString = "";
+
+        for (i = 0; i < A.length; i++) {
+            toAppendString += book(A[i]);
+        }
+
+        document.querySelector("#demo").innerHTML = toAppendString;
+
+    }
+</script>
+</html>
