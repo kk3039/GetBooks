@@ -56,8 +56,9 @@
 
         req.onreadystatechange = function() {
             if (req.readyState == 4 && req.status == 200) {
-                handleRes(req);
-                //document.getElementById("demo").innerHTML = req.responseText;
+                //handleRes(req);
+                console.log(req.responseText);
+                document.getElementById("demo").innerHTML = req.responseText;
             }
         };
         req.open('POST','/search',true);

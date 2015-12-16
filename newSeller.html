@@ -14,8 +14,10 @@
     <meta charset="UTF-8">
     <title>Sell your book</title>
     <link rel="stylesheet" href="css/main.css">
+
 </head>
 <body>
+<?php include 'upload.php';?>
 <form method = "post" action="add" id="form-box" >
     <div class='fontStyle newSeller'>
         <label > Course number: </label><input type='text' class='fontStyle' id='input-cname' name='courseName'>
@@ -38,11 +40,64 @@
 
     <input type='submit' value='Add!' id="btn-add" class='fontStyle'>
 </form>
-
+<form enctype="multipart/form-data" method="post" action="upload.php">
+    <div class="row">
+        <label for="fileToUpload">Select Files to Upload</label><br />
+        <input type="file" name="filesToUpload[]" id="filesToUpload" multiple="multiple" />
+        <output id="filesInfo"></output>
+    </div>
+    <div class="row">
+        <input type="submit" value="Upload"/>
+    </div>
+</form>
 <p></p>
 </body>
 <script>
 
+    function fileSelect(evt) {
+        if (window.File && window.FileReader && window.FileList && window.Blob) {
+            var files = evt.target.files;
+
+            var result = '';
+            var file;
+            for (var i = 0; file = files[i]; i++) {
+                // if the file is not an image, continue
+                if (!file.type.match('image.*')) {
+                    continue;
+                }
+
+                reader = new FileReader();
+                reader.onload = (function (tFile) {
+                    return function (evt) {
+                        var div = document.createElement('div');
+                        div.innerHTML = '<img style="width: 90px;" src="' + evt.target.result + '" />';
+                        document.getElementById('filesInfo').appendChild(div);
+                    };
+                }(file));
+                reader.readAsDataURL(file);
+            }
+        } else {
+            alert('The File APIs are not fully supported in this browser.');
+        }
+    }
+    function upload(){
+        if (window.File && window.FileReader && window.FileList && window.Blob) {
+            document.getElementById('filesToUpload').onchange = function(){
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function(ev){
+                    document.getElementById('filesInfo').innerHTML = 'Done!';
+                };
+                xhr.open('POST', 'upload.php', true);
+                var files = document.getElementById('filesToUpload').files;
+                var data = new FormData();
+                for(var i = 0; i < files.length; i++) data.append('file' + i, files[i]);
+                xhr.send(data);
+            };
+        } else {
+            alert('The File APIs are not fully supported in this browser.');
+        }
+    }
+    document.getElementById('filesToUpload').addEventListener('change', fileSelect, false);
 
 
 

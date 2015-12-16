@@ -4,6 +4,9 @@ var path = require('path');
 app.use(express.static(__dirname+'/public'));
 
 var bodyParser = require('body-parser');
+var _ = require('underscore');
+var exec = require("child_process").exec;
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
     extended:true
@@ -46,7 +49,7 @@ app.post('/search',function(req,res){
     var target = findCourse(query);
     if(target>=0){
      //   res.send(JSON.stringify(courses[target]));
-        sendJSON(res, query+'.json');
+        sendJSON(req, res, query+'.json');
     }
     else{
         res.send('not found');
@@ -72,11 +75,21 @@ app.post('/add',function(req,res){
 
 
 });
-
+app.post('/upload.php', function(req, res){
+    exec("php upload.php", function (error, stdout, stderr) {res.send(stdout);});
+});
 app.listen(port, function() {
     console.log('App is listening on port ' + port);
 });
 //-------------------------------------
+var book = _.template(
+    "<div class='book'>" +
+    "<h2><%= seller %></h2>" +
+    "<p>electronic copy? <%= ecopy %></p>" +
+    "<p><%= email %></p>" +
+    "</div>"
+);
+
 function sendFile(res, filename) {
     res.writeHead(200, {'Content-type': 'text/html'});
 
@@ -90,20 +103,24 @@ function sendFile(res, filename) {
         res.end();
         return;
     });
-};
-function sendJSON(res, filename) {
-    res.writeHead(200, {'Content-type': 'application/json'})
+}
+function sendJSON(req, res, filename) {
+    var course = fs.readFileSync(filename);
+    console.log(course);
+    var courseinfo;
+    if(!_.isEmpty(course)){
+        courseinfo = JSON.parse(course);
+    }
+    console.log(courseinfo);
+    var str = "";
+    courseinfo.forEach(function(p){
+        if(p!==null){
+            str += book(p);
+        }
+    });
+    res.send(str);
+    res.end();
 
-    var stream = fs.createReadStream(filename);
-
-    stream.on('data', function(data) {
-        res.write(data);
-    })
-
-    stream.on('end', function(data) {
-        res.end();
-        return;
-    })
 }
 function findCourse(key){
 
