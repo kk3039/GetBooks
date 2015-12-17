@@ -38,8 +38,8 @@
         <input type='submit' value='I have a book to sell!' id="btn-add" class='btn fontStyle'>
     </form>
 
+    <p id="demo2" class="fontStyle"></p>
     <p id="demo" class="fontStyle"></p>
-
     <footer>
         <p> Ying Lu and Xiaoman Xu || Worcester Polytechnic Institute </p>
         <a href="mailto:ylu6@wpi.edu">Contact Us</a>
@@ -49,9 +49,31 @@
 </body>
 
 <script>
-    function deleteMe(){
-        console.log(this);
+    function deleteMe(elm) {
+
+        //console.log(elm.id.split("/"));
+        var person = prompt("Please enter your verification code", "verification code");
+
+        var reqp = new XMLHttpRequest();
+        reqp.open('POST','/delete',true);
+        reqp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        reqp.onreadystatechange = function() {
+            if (reqp.readyState == 4 && reqp.status == 200) {
+                //handleRes(req);
+                //console.log(req.responseText);
+                document.getElementById("demo2").innerHTML = reqp.responseText;
+            }
+        };
+        reqp.send('delInfo='+elm.id.concat("/").concat(person));
+        reqp.onload = function () {
+           search();
+        };
     }
+
+
+
+
+
 
     function search(){
 

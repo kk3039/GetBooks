@@ -57,6 +57,20 @@ app.post('/search',function(req,res){
     res.end();
 });
 
+
+app.post('/delete',function(req,res) {
+    var isDeleted=deleteItem(req);
+    //onsole.log(isDeleted);
+    if(isDeleted==1){
+        res.send("Deleted!");
+    }
+    else if(isDeleted==2){
+        res.send("verification code is wrong");
+    }
+    res.end();
+});
+
+
 app.post('/add',function(req,res){
    // console.log('add seller info');
     var cname=req.body.courseName;
@@ -67,7 +81,8 @@ app.post('/add',function(req,res){
     if(cname!="" && sname!="" && email!=""){
     var target= findCourse(cname);
     if(target>=0){
-        var newInfo={seller: sname, ecopy:ecopy, email:email, verification:verify};
+        var newInfo={seller: sname, ecopy:ecopy, email:email, verification:verify, bid:cname.concat("/").concat(sname)};
+       //console.log(newInfo);
         var course = fs.readFileSync(path.join(__dirname, '/public/JSON/'+cname+'.json'));
         var courseinfo;
         if(!_.isEmpty(course)){
@@ -101,7 +116,7 @@ var book = _.template(
     "<a href=mailto:" +
     "<%= email %>" +
     ">Email me!</a>" +
-    "<input type='button' value='delete' id='btn-del' class='btn fontStyle' onclick='deleteMe();'>"+
+    "<input type='button' id='<%=bid%>' value='delete' class='btn fontStyle' onclick='deleteMe(this);'>"+
     "</div>"
 );
 
@@ -154,3 +169,60 @@ function findCourse(key){
         return -1;
     }
 }
+
+function deleteItem(req) {
+    var query = req.body.delInfo.split("/"); //get post value
+    console.log(query[2]);
+    var target = findCourse(query[0].toLowerCase());
+    if (target >= 0) {
+        //   res.send(JSON.stringify(courses[target]));
+        // sendJSON(res, path.join(__dirname, '/public/JSON/'+query+'.json'));
+        var course = fs.readFileSync(path.join(__dirname, '/public/JSON/' + query[0] + '.json'));
+        var courseinfo;
+        if (!_.isEmpty(course)) {
+            courseinfo = JSON.parse(course);
+        }
+        var flag = -1;
+        for (var i = 0; i < courseinfo.length; i++) {
+
+            if (courseinfo[i].seller == query[1]) {
+
+                if(courseinfo[i].verification == query[2]) {
+
+                    flag = 1;
+                }
+                else{
+
+                    flag=2;
+                }
+                break;
+            }
+        }
+        if (flag == 1) {
+            courseinfo.splice(i, 1);
+            fs.writeFile(path.join(__dirname, '/public/JSON/' + query[0] + '.json'), JSON.stringify(courseinfo));
+        }
+    return flag;
+
+
+
+    }
+};
+
+
+
+    //if(query.trim().length){
+    //    var index = favorites.indexOf(query);
+    //
+    //    if(index>-1){
+    //        favorites.splice(index,1); //remove from array
+    //        //console.log('removed');
+    //    }
+    //    else{
+    //        res.end('item not exist');
+    //    }
+    //
+    //}
+//    //write to file
+//    fs.writeFileSync('favorites.txt',favorites.join('\n'), 'utf8');
+//};
