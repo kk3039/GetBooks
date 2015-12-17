@@ -22,10 +22,10 @@ var fs = require("fs");
 //    {seller: 'the Imp', ecopy:"No", email:"ylu6@wpi.edu"},
 //];
 
-var cs4445=[
-    {seller: 'John Snow', ecopy:"Yes", email:"xxu3@wpi.edu"},
-    {seller: 'the Imp', ecopy:"No", email:"xxu3@wpi.edu"},
-];
+//var cs4445=[
+//    {seller: 'John Snow', ecopy:"Yes", email:"xxu3@wpi.edu"},
+//    {seller: 'the Imp', ecopy:"No", email:"xxu3@wpi.edu"},
+//];
 
 //var courses=[cs3013,cs4445];
 
@@ -46,13 +46,13 @@ app.post('/search',function(req,res){
 
     var query=req.body.courseNum;
 
-    var target = findCourse(query);
+    var target = findCourse(query.toLowerCase());
     if(target>=0){
      //   res.send(JSON.stringify(courses[target]));
-        sendJSON(req, res, query+'.json');
+        sendJSON(res, path.join(__dirname, '/public/JSON/'+query+'.json'));
     }
     else{
-        res.send('not found');
+        res.send('Course not found, please enter again!');
     }
     res.end();
 });
@@ -63,18 +63,30 @@ app.post('/add',function(req,res){
     var sname=req.body.sellerName;
     var ecopy=req.body.ecopy;
     var email=req.body.email;
+    var verify=req.body.verification;
+    if(cname!="" && sname!="" && email!=""){
     var target= findCourse(cname);
     if(target>=0){
-        var newInfo={seller: sname, ecopy:ecopy, email:email};
-        courses[target].push(newInfo);
+        var newInfo={seller: sname, ecopy:ecopy, email:email, verification:verify};
+        var course = fs.readFileSync(path.join(__dirname, '/public/JSON/'+cname+'.json'));
+        var courseinfo;
+        if(!_.isEmpty(course)){
+            courseinfo = JSON.parse(course);
+        }
+        courseinfo.push(newInfo);
+        fs.writeFile(path.join(__dirname, '/public/JSON/'+cname+'.json'), JSON.stringify(courseinfo));
         res.sendFile(path.join(__dirname, '/public/confirm.html'));
     }
     else{
-        res.send('Course not found, please enter again');
+        res.send('Course not found, please enter again!');
+    }
+    }
+    else{
+        res.send('Please fill out all the information')
     }
 
-
 });
+
 app.post('/upload.php', function(req, res){
     exec("php upload.php", function (error, stdout, stderr) {res.send(stdout);});
 });
@@ -86,9 +98,14 @@ var book = _.template(
     "<div class='book'>" +
     "<h2><%= seller %></h2>" +
     "<p>electronic copy? <%= ecopy %></p>" +
-    "<p><%= email %></p>" +
+    "<a href=mailto:" +
+    "<%= email %>" +
+    ">Email me!</a>" +
+    "<input type='button' value='delete' id='btn-del' class='btn fontStyle' onclick='deleteMe();'>"+
     "</div>"
 );
+
+
 
 function sendFile(res, filename) {
     res.writeHead(200, {'Content-type': 'text/html'});
@@ -104,24 +121,29 @@ function sendFile(res, filename) {
         return;
     });
 }
-function sendJSON(req, res, filename) {
+function sendJSON(res, filename) {
     var course = fs.readFileSync(filename);
-    console.log(course);
     var courseinfo;
     if(!_.isEmpty(course)){
         courseinfo = JSON.parse(course);
     }
-    console.log(courseinfo);
-    var str = "";
-    courseinfo.forEach(function(p){
-        if(p!==null){
-            str += book(p);
-        }
-    });
-    res.send(str);
+    if(courseinfo.length) {
+        var str = "";
+        courseinfo.forEach(function (p) {
+            if (p !== null) {
+                str += book(p);
+            }
+        });
+        res.send(str);
+    }
+    else{
+        res.send('Sorry, no one has that textbook yet...');
+    }
     res.end();
 
 }
+
+
 function findCourse(key){
 
     var index = courseName.indexOf(key);

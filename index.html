@@ -30,7 +30,7 @@
     </header>
 
     <form id="form-box" onsubmit="return false;">
-        <input type='text' class='fontStyle' id='input-courseNum' name='courseNum'>
+        <input type='text' class='fontStyle' id='input-courseNum' name='courseNum' placeholder="e.g. cs3013">
         <input type='submit' value='Go!' id="btn-go" class='btn fontStyle' onclick="search();">
     </form>
 
@@ -42,13 +42,16 @@
 
     <footer>
         <p> Ying Lu and Xiaoman Xu || Worcester Polytechnic Institute </p>
-        <p>Contact Us</p>
+        <a href="mailto:ylu6@wpi.edu">Contact Us</a>
     </footer>
 </div>
 
 </body>
 
 <script>
+    function deleteMe(){
+        console.log(this);
+    }
 
     function search(){
 
@@ -57,7 +60,7 @@
         req.onreadystatechange = function() {
             if (req.readyState == 4 && req.status == 200) {
                 //handleRes(req);
-                console.log(req.responseText);
+                //console.log(req.responseText);
                 document.getElementById("demo").innerHTML = req.responseText;
             }
         };
@@ -69,14 +72,14 @@
 
     var books = [];
 
-
-    var book = _.template(
-            "<div class='book'>" +
-            "<h2><%= seller %></h2>" +
-            "<p>electronic copy? <%= ecopy %></p>" +
-            "<p><%= email %></p>" +
-            "</div>"
-    );
+//
+//    var book = _.template(
+//            "<div class='book'>" +
+//            "<h2><%= seller %></h2>" +
+//            "<p>electronic copy? <%= ecopy %></p>" +
+//            "<p><%= email %></p>" +
+//            "</div>"
+//    );
 
     function handleRes(req) {
         if (req.readyState !== XMLHttpRequest.DONE)

@@ -3,11 +3,12 @@
 <style>
     .newSeller{
         font-style: normal;
-        font-size:24px;
+        font-size:20px;
+        margin-bottom: 10px;
     }
 
     input {
-        font-size:22px;
+        font-size:26px;
     }
 </style>
 <head>
@@ -18,7 +19,7 @@
 </head>
 <body>
 <?php include 'upload.php';?>
-<form method = "post" action="add" id="form-box" >
+<form method = "post" action="add" id="form-box" name="formbox" >
     <div class='fontStyle newSeller'>
         <label > Course number: </label><input type='text' class='fontStyle' id='input-cname' name='courseName'>
     </div>
@@ -38,8 +39,17 @@
     <label>Your WPI email: </label><input type='text' class='fontStyle' id='input-email' name='email'>
     </div>
 
-    <input type='submit' value='Add!' id="btn-add" class='fontStyle'>
+    <div class='fontStyle newSeller'>
+        <label>Delete Code: </label><input type="password" name="verification" id="input-verify" />
+        <p>This delete code will be used to verify you identity when you delete the seller info. </p>
+        <p>It's simple and unencrypted but should be able to prevent others to mess with your info. </p>
+        <p>Please write it down! </p>
+    </div>
+
+    <input type='button' value='Add!' id="btn-add" class='fontStyle' onclick="ValidateEmail(document.formbox.email);">
+
 </form>
+
 <form enctype="multipart/form-data" method="post" action="upload.php">
     <div class="row">
         <label for="fileToUpload">Select Files to Upload</label><br />
@@ -54,6 +64,22 @@
 </body>
 <script>
 
+    function ValidateEmail(inputText)
+    {
+        var mailformat = /^\w+([\.-]?\w+)*@wpi\.edu+$/;
+        if(inputText.value.match(mailformat))
+        {
+            document.formbox.email.focus();
+
+            document.getElementById('form-box').submit();
+        }
+        else
+        {
+            alert("You have entered an invalid email address! Please enter your wpi.edu email :) ");
+            document.formbox.email.focus();
+            return false;
+        }
+    }
     function fileSelect(evt) {
         if (window.File && window.FileReader && window.FileList && window.Blob) {
             var files = evt.target.files;
